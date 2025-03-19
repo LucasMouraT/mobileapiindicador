@@ -1,0 +1,74 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
+
+export default function App() {
+  const [indicadores, setIndicadores] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    carregarIndicadores();
+  }, []);
+
+  const carregarIndicadores = async () => {
+    try {
+      const response = await fetch(
+        'https://servicodados.ibge.gov.br/api/v1/paises/indicadores/'
+      );
+      const data = await response.json();
+      
+      console.log('Dados recebidos:', JSON.stringify(data, null, 2)); // Log da API
+      setIndicadores(data);
+      
+    } catch (error) {
+      console.error('Erro ao carregar indicadores: ', error);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Indicadores</Text>
+      {carregando ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <FlatList
+          data={indicadores}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.item}>
+              <Text style={styles.text}>
+                {item.indicador || 'Nome não disponível'}
+              </Text>
+            </View>
+          )}
+        />
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+    backgroundColor: '#f4f4f4',
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  item: {
+    padding: 15,
+    backgroundColor: '#fff',
+    marginBottom: 10,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  text: {
+    fontSize: 18,
+  },
+});
